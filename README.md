@@ -21,10 +21,11 @@ Following software was used:
 3. RStudio (1.3.1093)<br/>
 4. Visual Studio Code (1.52.1)<br/>
 5. Jupyter Extension (1.0.0) for  Visual Studio Code <br/>
-<br/><br/>
-Chrome extension software<br/>
-1. SelectorGadget (1.1.1) <br/>
-2. Link Clipper (2.4.1)
+<br/>
+Chrome extension software:
+<br/>
+<li>1. SelectorGadget (1.1.1) </li>
+<li> 2. Link Clipper (2.4.1) </li>
 <br/>
 <br/>
 
@@ -39,6 +40,7 @@ Chrome extension software<br/>
 <li>*song_vocabulary.csv* - CSV file containing a list of all unique tokens in the song lyrics</li>
 <li>*song_vocabulary.pkl* - Pickle file containing a list of all unique tokens in the song lyrics</li>
 </ul>
+<br/>
 2. **Visualisations** folder:<br/>
 <ul>
 </li>
