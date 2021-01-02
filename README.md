@@ -16,65 +16,67 @@ Comprising more than 600 songs and hymns, the Danish Højskolesangbog could prov
 All data operations were performed on a 2020 MacBook Pro 13’’, 2 GHz Quad-Core Intel Core i5, 16 GB Ram running macOS Catalina (10.15.6). <br/>
 Following software was used: 
 <br/><br/>
-1. Python (3.8.5)<br/>
-2. R (4.0.02)<br/>
-3. RStudio (1.3.1093)<br/>
-4. Visual Studio Code (1.52.1)<br/>
-5. Jupyter Extension (1.0.0) for  Visual Studio Code <br/>
+<ul>
+<li>Python (3.8.5)</li>
+<li>R (4.0.02)</li>
+<li>RStudio (1.3.1093)</li>
+<li>Visual Studio Code (1.52.1)</li>
+<li>Jupyter Extension (1.0.0) for  Visual Studio Code </li>
+</ul>
 <br/>
 Chrome extension software:
 <br/>
+ <ul>
 <li>1. SelectorGadget (1.1.1) </li>
 <li> 2. Link Clipper (2.4.1) </li>
+</ul>
 <br/>
 <br/>
 
 # Files 
 <br/>This repository is structured as follows:
 <br/><br/>
-
-1. **Data** folder:<br/>
 <ul>
-<li>*clean_song_data_with_word_counts.csv* - CSV file containing the full, cleaned data frame outputted from the Python script</li>
-<li>*song_urls.csv* - CSV file containing list of URLs linking to web pages for each individual song</li>
-<li>*song_vocabulary.csv* - CSV file containing a list of all unique tokens in the song lyrics</li>
-<li>*song_vocabulary.pkl* - Pickle file containing a list of all unique tokens in the song lyrics</li>
+<li><strong>Data folder:</strong></li>
+<ul>
+<li><em>clean_song_data_with_word_counts.csv</em> - CSV file containing the full, cleaned data frame outputted from the Python script</li>
+<li><em>song_urls.csv</em> - CSV file containing list of URLs linking to web pages for each individual song</li>
+<li><em>song_vocabulary.csv</em> - CSV file containing a list of all unique tokens in the song lyrics</li>
+<li><em>song_vocabulary.pkl</em> - Pickle file containing a list of all unique tokens in the song lyrics</li>
 </ul>
-<br/>
-2. **Visualisations** folder:<br/>
+<li><strong>Visualisations</strong> folder:</li>
 <ul>
 </li>
-<li>*aggregated_15.png* - Plot showing development in religious language use when songs have been grouped and aggregated across 15 songs</li>
-<li>*aggregated_songs_15_religious_intensity.gif* - GIF showing unsmoothed development in religious 
+<li><em>aggregated_15.png</em> - Plot showing development in religious language use when songs have been grouped and aggregated across 15 songs</li>
+<li><em>aggregated_songs_15_religious_intensity.gif</em> - GIF showing unsmoothed development in religious 
 language use when songs have been grouped and aggregated across 15 songs</li>
-<li>*interval_plot.gif* - GIF showing  development in religious language use when songs have been grouped and aggregated across 6 time intervals</li>
+<li><em>interval_plot.gif</em> - GIF showing  development in religious language use when songs have been grouped and aggregated across 6 time intervals</li>
 </ul>
 </li>
-3. *analysing_hojskolesangbogen.ipynb* - Jupyter notebook script containing code for autmated web scraping and preprocssing of the scraped data into a tidy data set<br/>
-4. *analysing_hojskolesangbogen.rmd* - RMarkdown script containing analysis and visualisations of development in religious language use <br/>
-5. *requirements.txt* - TXT file containing requirements for running  *analysing_hojskolesangbogen.ipynb* script locally:
-<br/>
+<li><em>analysing_hojskolesangbogen.ipynb</em> - Jupyter notebook script containing code for autmated web scraping and preprocssing of the scraped data into a tidy data set</li>
+<li><em>analysing_hojskolesangbogen.rmd</em> - RMarkdown script containing analysis and visualisations of development in religious language use </li>
+<li><em>requirements.txt</em> - TXT file containing requirements for running  *analysing_hojskolesangbogen.ipynb* script locally</li>
 </ul>
 
 ## Metadata
 <br/>
-Following metadata list provides an explanation of the columns in the full cleaned data set, *clean_song_data_with_word_counts.csv*, produced by the *analysing_hojskolesangbogen.ipynb*:
+Following metadata list provides an explanation of the columns in the full cleaned data set, <em>clean_song_data_with_word_counts.csv</em>, produced by the <em>analysing_hojskolesangbogen.ipynb</em>:
 
 <ul>
-<li>*songwriter* - This column contains the name of the primary songwriter - Type: string</li>
-<li>*year_written* - This column contains the year the song was written - Type: numeric </li>
-<li>*cinoiser* - This column contains the name of the primary composer - Type: string</li>
-<li>*year_composed* - This column contains the year the song was composed - Type: numeric </li>
-<li>*lyrics* - This column contains the song lyrics- Type: string</li>
-<li>*title* - This colummn contains the song title - Type: string </li>
-<li>*columns numbered 9-13326* - These columns contain words counts and each represent a unique word in the vocabulary - Type: numeric </li>
+<li><em>songwriter</em> - This column contains the name of the primary songwriter - Type: string</li>
+<li><em>year_written</em> - This column contains the year the song was written - Type: numeric </li>
+<li><em>cinoiser</em> - This column contains the name of the primary composer - Type: string</li>
+<li><em>year_composed</em> - This column contains the year the song was composed - Type: numeric </li>
+<li><em>lyrics</em> - This column contains the song lyrics- Type: string</li>
+<li><em>title</em> - This colummn contains the song title - Type: string </li>
+<li><em>columns numbered 9-13326</em> - These columns contain words counts and each represent a unique word in the vocabulary - Type: numeric </li>
 </ul>
 
 
 # Execution and requirements
-The RMarkdown 'analysing_hojskolesangbogen.rmd' file can be directly executed in the desktop version RStudio (1.3.1093) as long as base R (4.0.02) has been installed. All packages are installed, loaded and managed using the package manager 'pacman'. 
+The RMarkdown <em>analysing_hojskolesangbogen.rmd</em> file can be directly executed in the desktop version RStudio (1.3.1093) as long as base R (4.0.02) has been installed. All packages are installed, loaded and managed using the package manager 'pacman'. 
 <br/><br/>
-The 'analysing_hojskolesangbogen.ipynb' file Package requirements are found in the 'requirements.txt' file. Alternatively, the code can be executed more easily using Google Colab which means no packages have to be installed locally. This only demands that one has an active Google account. You can access the script using the following link:<br/>
+The <em>analysing_hojskolesangbogen.ipynb</em> file Package requirements are found in the <em>requirements.txt</em> file. Alternatively, the code can be executed more easily using Google Colab which means no packages have to be installed locally. This only demands that one has an active Google account. You can access the script using the following link:<br/>
 https://colab.research.google.com/drive/1DggRL25M4LWOkSxmtHa7Mlqv9c010Hv0#scrollTo=dhG1vgE54K1-
 <br/>
 
