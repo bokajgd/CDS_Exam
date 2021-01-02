@@ -1,0 +1,286 @@
+---
+title: "CDS Exam - Analysing Højskolesangbogen"
+author: "Jakob Grøhn Damgaard"
+date: "12/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+install.packages('pacman')
+library(pacman)
+pacman::p_load(tidyverse, dplyr, gganimate, gifski)
+# 'gifski' needed for rendering of animations 
+```
+
+## Analysing semantic and linguistic patterns in the Danish Højskolesangbog
+This markdown script contains analysis of semantic and linguistic patterns in songs in the 19th version of the Danish Højskolesangbogen. These patterns are then represented using graphical animations and visualisations.
+The loaded data is obtained through automated web scraping of hojskolesangbogen.dk performed in Python 3.8.5
+
+**1. Loading and  preparing data**
+```{r Loading and  preparing data, results='hide', warning = FALSE, message = FALSE}
+# Loading song data
+song_data <- read_csv('Data/clean_song_data_with_word_counts.csv')
+
+# Turning 'no data' cells in columns containing years into NAs
+song_data$year_written <- as.numeric(song_data$year_written)
+song_data$year_composed <- as.numeric(song_data$year_written)
+
+# Adding empty column with time interval
+song_data$time_written_interval <- NA
+
+# Moving this column to front of data frame
+song_data <- song_data %>%
+  select(time_written_interval, everything())
+
+
+# Loading vocabulary
+vocab <- read_csv('Data/song_vocabulary.csv')
+
+# Ordering vocabulary according to designated word numbers
+vocab <- vocab[order(vocab$Word),]  
+
+# Creating list of words in vocabulary
+vocab_words <- as.vector(vocab$Vocab)
+
+# Changing column names in song_data to real words
+colnames(song_data)[9:13326] <- vocab_words
+
+
+# Create list of most common religious words
+rel_words <- c('jesu', 'jesubarnet', 'helligånden', 'hellig', 'gud', 'himmel', 'himlen', 'krist', 'himmelsk', 'fader','herre', 'herren', 'velsigne', 'ånd', 'åndelig', 'rige','himmerrige', 'halleluja', 'guds', 'kristendom','kristelighed','frelserens','velsignelsen', 'velsignet', 'velsigner', 'paradis','jul')
+```
+
+
+
+**2. Matching religious words with vocabulary**
+```{r Find religious words in vocabulary}
+# Create empty data frame
+rel_words_present <- c()
+
+# Loop through the vocabulary to find the numbers matching the religious words
+for(i in colnames(song_data)){
+  if (i %in% rel_words){
+    rel_words_present = c(rel_words_present, i)
+  }
+}
+
+# Create empty data frame
+rel_words_sums = tibble()
+
+
+# Find the frequency of the religious words
+for(i in as.vector(rel_words_present)){
+  rel_words_sums = rbind(rel_words_sums, sum(song_data[,i]))
+}
+
+# Creating concatenated data frame
+rel_words_overall = cbind(rel_words_sums,rel_words_present)
+# Renaming column containing counts
+rel_words_overall <- rel_words_overall %>% rename( count = X39)
+
+# Number of words in the corpus
+sum(song_data[, 9:13326])
+``` 
+Songs are categorised into following time intervals for temporal analyses:\
+ 1. < 1700\
+ 2. 17-1800\
+ 3. 1800-1850\
+ 4. 1850-1900\
+ 5. 1900-1950\
+ 5. 2000 >\
+\
+**3. Temporally categorising songs**
+```{r  Temporally categorising songs}
+# Grouping songs according to year writting
+for(i in 1:nrow(song_data)){
+  if (is.na(song_data$year_written[i])){
+    song_data$time_written_interval[i] = 'Uknown date'
+  } else if (song_data$year_written[i] < 1800){
+    song_data$time_written_interval[i] = '< 1800'
+  } else if (song_data$year_written[i] >= 1800 & song_data$year_written[i]< 1850){
+    song_data$time_written_interval[i] = '1800-1850'
+  } else if (song_data$year_written[i] >= 1850 & song_data$year_written[i]< 1900){
+    song_data$time_written_interval[i] = '1850-1900'
+  } else if (song_data$year_written[i] >= 1900 & song_data$year_written[i]< 1950){
+    song_data$time_written_interval[i] = '1900-1950'
+  } else if (song_data$year_written[i] >= 1950 & song_data$year_written[i]< 2000){
+    song_data$time_written_interval[i] = '1950-2000'
+  } else {
+    song_data$time_written_interval[i] = '2000 >'
+  }
+}    
+
+# Define non-numeric columns
+drop_cols = c('X1', 'year_written', 'songwriter', 'composer', 'year_composed', 'lyrics', 'title')
+
+# Find number of occurrences of religious words for each time interval
+time_grouped_data <- song_data %>%
+  select(-one_of(drop_cols)) %>% 
+  group_by(time_written_interval) %>% 
+  summarise_each(funs(sum)) 
+  
+# Adding column containing total words in all lyrics in that time interval
+time_grouped_data$total_words <-NA
+  
+# Moving this column to front of data frame
+time_grouped_data <- time_grouped_data %>%
+  select(total_words, everything())
+
+# Fill column with value outputted by summing all columns 
+for (i in 1:nrow(time_grouped_data)){
+  time_grouped_data$total_words[i] = sum(time_grouped_data[i,3:13320])
+}
+
+# Keep only columns with religious words, total words and category
+time_grouped_data <- time_grouped_data %>% select(one_of(rel_words_present) | total_words | time_written_interval)
+
+# Adding column containing total words in all lyrics in that time interval
+time_grouped_data$total_rel_words <-NA
+  
+# Fill column with value outputted by summing all columns 
+for (i in 1:nrow(time_grouped_data)){
+  time_grouped_data$total_rel_words[i] = sum(time_grouped_data[i,1:21])
+}
+
+# Add column contaning frequency of religious words
+time_grouped_data$rel_word_freq = time_grouped_data$total_rel_words / time_grouped_data$total_words * 100
+
+# Create empty column for number of songs in each time span
+time_grouped_data$total_songs <- as.vector(table(song_data$time_written_interval))
+
+# Remove row with song with unknown data
+time_grouped_data <- time_grouped_data[-c(7), ]
+``` 
+
+
+**4. Plots and visualisation of interval aggregated data**
+```{r Plots}
+# Add column for use as transition time variable in gganimate plot
+time_grouped_data$cout <- c(1:6)
+
+# Create line plot of development in frequency of religious words
+interval_plot <- ggplot(time_grouped_data, aes(x = as.factor(time_written_interval), y = rel_word_freq, group = 1)) +
+  geom_line(color = '#586CB0', size = 1)+
+  geom_point(color = '#586CB0', size = 2) +
+  labs(x = "Year of writing", # Defining all labels
+       y = "Frequency of religious words (% of all words)", 
+       title = "Change in religious intensity")+
+  theme_bw() +  # Setting theme
+  transition_reveal(cout)
+
+# Define plot size and save GIF to working directory
+animate(interval_plot, height = 500, width = 750)
+anim_save("Visualisations/interval_plot.gif")
+```
+
+**5. Get religious intensity for each song**
+```{r Religious intensity for each song*}
+indivudal_song_data <- song_data[order(song_data$year_written),]  
+
+individual_drop_cols = c('X1', 'songwriter', 'composer', 'year_composed', 'lyrics', 'title')
+
+indivudal_song_data <- indivudal_song_data %>%
+  select(-one_of(individual_drop_cols))
+
+# Adding column containing total words in all lyrics in that time interval
+indivudal_song_data$total_words <-NA
+  
+# Moving this column to front of data frame
+indivudal_song_data <- indivudal_song_data %>%
+  select(total_words, everything())
+
+# Fill column with value outputted by summing all columns 
+for (i in 1:nrow(indivudal_song_data)){
+  indivudal_song_data$total_words[i] = sum(indivudal_song_data[i,4:13320])
+}
+
+# Keep only columns with religious words, total words and category
+indivudal_song_data <- indivudal_song_data %>% select(one_of(rel_words_present) | total_words | year_written)
+
+# Adding column containing total words in all lyrics in that time interval
+indivudal_song_data$total_rel_words <-NA
+  
+# Fill column with value outputted by summing all columns 
+for (i in 1:nrow(indivudal_song_data)){
+  indivudal_song_data$total_rel_words[i] = sum(indivudal_song_data[i,1:21])
+}
+
+# Add column contaning frequency of religious words
+indivudal_song_data$rel_word_freq = indivudal_song_data$total_rel_words / indivudal_song_data$total_words * 100
+
+# Remove songs with uknown data
+indivudal_song_data <- indivudal_song_data %>% filter(is.na(year_written) == FALSE)
+
+# Remove songs with no appertaining texy
+indivudal_song_data <- indivudal_song_data %>% filter(total_words != 0)
+
+# Removing outlier songs written before 1500
+indivudal_song_data <- indivudal_song_data %>% filter(year_written > 1500)
+```
+
+**6. Visualising individual songs**
+```{r Plots - 2}
+# Create line plot of development in frequency of religious words for each song
+ggplot(indivudal_song_data, aes(x = year_written, y = rel_word_freq, group = 1)) +
+  geom_line(color = '#586CB0', size = 1)+
+  geom_point(color = '#586CB0', size = 2) +
+  labs(x = "Year of writing", # Defining all labels
+       y = "Frequency of religious words (% of all words)", 
+       title = "Change in religious intensity")+
+  theme_bw() # Setting theme
+  
+
+# Finding most religious song
+most_religious_song <- song_data %>% filter(year_written == 1845 & krist == 4)
+```
+
+**7. Get religious intensity for an aggregation of every 15th song**
+```{r Get religious intensity for an aggregation of every 15th song}
+# Creating a copy of data and moving rel_word_freq
+song_data_15_collapsed <- indivudal_song_data %>% select(-rel_word_freq)
+
+# Turning year_written values numeric
+song_data_15_collapsed$year_written <- as.numeric(song_data_15_collapsed$year_written)
+
+
+# Aggregating values for every five song 
+# Credit: https://stackoverflow.com/questions/30359427/calculate-the-mean-of-every-13-rows-in-data-frame
+n <-  15
+song_data_15_collapsed <-  aggregate(song_data_15_collapsed,list(rep(1:(nrow(song_data_15_collapsed)%/%n+1),each=n,len=nrow(song_data_15_collapsed))),mean)[-1]
+
+# Creating new column with religious word frequency
+song_data_15_collapsed$rel_word_freq = song_data_15_collapsed$total_rel_words / song_data_15_collapsed$total_words * 100
+```
+
+
+**8. Visualising religious intensity for an aggregation of every 15th song**
+```{r Plots - 3}
+# Creating animated line plot of development in frequency of religious words
+ggplot(song_data_15_collapsed, aes(x = year_written, y = rel_word_freq, group = 1)) +
+  geom_line(color = '#586CB0', size = 1)+
+  geom_point(color = '#586CB0', size = 2) +
+  labs(x = "Year of writing", # Defining all labels
+       y = "Frequency of religious words (% of all words)", 
+       title = "Change in religious intensity") +
+  theme_bw() + # Setting theme
+  transition_reveal(year_written)
+
+# Saving animation
+anim_save("Visualisations/aggregated_songs_15_religious_intensity.gif")
+
+# Plot with smooth line
+aggregated_15 <- ggplot(song_data_15_collapsed, aes(x = year_written, y = rel_word_freq, group = 1),
+                        width = 750, height = 500) +
+  geom_smooth(color = '#586CB0', size = 1, span = 0.5, alpha = 0.15)+
+  geom_point(color = '#586CB0', size = 2, alpha = 0.5) +
+  labs(x = "Year of writing", # Defining all labels
+       y = "Frequency of religious words (% of all words)", 
+       title = "Change in Religious intensity")+
+  theme_bw() # Setting theme
+aggregated_15
+
+# Saving final plot as png
+ggsave("Visualisations/aggregated_15.png", width = 6, height = 4)
+```
+
